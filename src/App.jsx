@@ -57,7 +57,7 @@ function App() {
 
     // Add a moon (clouds) to the scene
     const moonGeometry = new THREE.SphereGeometry(2, 10, 10); // Smaller moon size
-    const moonTexture = new THREE.TextureLoader().load('cloud_texture.jpg');
+    const moonTexture = new THREE.TextureLoader().load('cloud.jpg');
     const moonMaterial = new THREE.MeshStandardMaterial({
       map: moonTexture,
       transparent: true,
@@ -66,24 +66,42 @@ function App() {
     const moon = new THREE.Mesh(moonGeometry, moonMaterial);
     planet.add(moon); // Set moon as a child of the planet
 
-    // Render loop
-    const animate = () => {
-      requestAnimationFrame(animate);
+    const saturnGeometry = new THREE.SphereGeometry(8, 28, 28); // Adjusted size for Saturn
+    const saturnTexture = new THREE.TextureLoader().load('moon.jpg'); // Load Saturn texture
+    const saturnMaterial = new THREE.MeshStandardMaterial({ map: saturnTexture }); // Apply texture to material
+    const saturn = new THREE.Mesh(saturnGeometry, saturnMaterial); // Create Saturn mesh
+    saturn.position.set(0, 0, 0); // Adjusted position for Saturn (very close to the planet)
+    scene.add(saturn); // Add Saturn to the scene
+    
+  // Render loop
+const animate = () => {
+  requestAnimationFrame(animate);
 
-      // Rotate the planet
-      planet.rotation.y += 0.02;
+  // Rotate the planet
+  planet.rotation.y += 0.02;
 
-      // Move the moon around the planet
-      const orbitRadius = 30;
-      const orbitSpeed = 0.01;
-      const angle = Date.now() * orbitSpeed;
-      const x = Math.cos(angle) * orbitRadius;
-      const z = Math.sin(angle) * orbitRadius;
-      moon.position.set(x, 0, z);
+  // Move Saturn around the planet
+  const orbitRadius = 50; // Adjusted orbit radius
+  const orbitSpeed = 0.0001; // Adjusted orbit speed
+  const angle = Date.now() * orbitSpeed;
+  const x = Math.cos(angle) * orbitRadius;
+  const z = Math.sin(angle) * orbitRadius;
+  saturn.position.set(x, 0, z); // Set new position for Saturn
 
-      controls.update(); // Update controls
-      renderer.render(scene, camera);
-    };
+  // Rotate Saturn around its axis
+  saturn.rotation.y += 0.02;
+
+  // Move the moon around the planet
+  const moonOrbitRadius = 30;
+  const moonAngle = Date.now() * orbitSpeed;
+  const moonX = Math.cos(moonAngle) * moonOrbitRadius;
+  // const moonZ = Math.sin(moonAngle) * moonOrbitRadius;
+  moon.position.set(moonX, 0)
+
+  controls.update(); // Update controls
+  renderer.render(scene, camera);
+};
+
 
     animate();
 
