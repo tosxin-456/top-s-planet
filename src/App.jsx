@@ -82,7 +82,7 @@ const animate = () => {
 
   // Move Saturn around the planet
   const orbitRadius = 50; // Adjusted orbit radius
-  const orbitSpeed = 0.0001; // Adjusted orbit speed
+  const orbitSpeed = 0.001; // Adjusted orbit speed
   const angle = Date.now() * orbitSpeed;
   const x = Math.cos(angle) * orbitRadius;
   const z = Math.sin(angle) * orbitRadius;
