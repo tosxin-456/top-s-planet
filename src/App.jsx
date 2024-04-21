@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import Navbar from './components/nabar';
 
 function App() {
   const mountRef = useRef(null);
@@ -110,7 +111,8 @@ function App() {
     };
   }, [aspectRatio]);
 
-  return <canvas ref={mountRef} />;
+  return <
+    canvas ref={mountRef} />;
 }
 
 export default App;
