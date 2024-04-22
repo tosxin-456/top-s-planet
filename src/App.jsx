@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Navbar from './components/nabar';
+import TWEEN from '@tweenjs/tween.js';
 
 function App() {
   const mountRef = useRef(null);
@@ -141,9 +142,70 @@ function App() {
     
     // Adjust the number of asteroids as needed
     Array(25).fill().forEach(asteroids);
-    
-    
-    
+
+
+// Create a raycaster
+const raycaster = new THREE.Raycaster();
+
+// Assuming you have defined camera, scene, planet, moon, and saturn somewhere in your code
+
+// Function to handle asteroid click event
+function onAsteroidClick(event) {
+  event.preventDefault();
+
+  // Calculate mouse position
+  const mouse = new THREE.Vector2();
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // Set raycaster position based on mouse position and camera
+  raycaster.setFromCamera(mouse, camera);
+
+  // Find intersected object
+  const intersects = raycaster.intersectObjects(scene.children);
+
+  if (intersects.length > 0) {
+    const clickedObject = intersects[0].object;
+
+    // Check if the clicked object is an asteroid
+    if (clickedObject instanceof THREE.Mesh && clickedObject !== planet && clickedObject !== moon && clickedObject !== saturn) {
+      // Move the clicked asteroid back a little
+      const moveBackDistance = 50;
+      
+      // Use Tween.js for smooth transition
+      new TWEEN.Tween(clickedObject.position)
+        .to({ z: clickedObject.position.z - moveBackDistance }, 500) // duration: 500ms
+        .start();
+
+      // Adjust rotation speed of the clicked asteroid
+      clickedObject.rotationSpeed = {
+        x: Math.random() * 0.05 - 0.025, // Adjust rotation speed in x-axis
+        y: Math.random() * 0.05 - 0.025, // Adjust rotation speed in y-axis
+        z: Math.random() * 0.05 - 0.025  // Adjust rotation speed in z-axis
+      };
+    }
+  }
+}
+
+// Add click event listener to the document
+document.addEventListener('click', onAsteroidClick, false);
+
+
+// Inside the render loop, adjust the rotation of clicked asteroids
+scene.children.forEach(object => {
+  if (object instanceof THREE.Mesh && object !== planet && object !== moon && object !== saturn) {
+    // Check if the asteroid has a custom rotation speed
+    if (object.rotationSpeed) {
+      object.rotation.x += object.rotationSpeed.x;
+      object.rotation.y += object.rotationSpeed.y;
+      object.rotation.z += object.rotationSpeed.z;
+    } else {
+      // Apply default rotation speed
+      object.rotation.x += 0.01; // Adjust rotation speed as needed
+      object.rotation.y += 0.01; // Adjust rotation speed as needed
+    }
+  }
+});
     
 // Render loop
 const animate = () => {
