@@ -42,8 +42,8 @@ function App() {
     const pointHelper = new THREE.PointLightHelper(pointLight);
     scene.add(pointHelper);
 
-    const gridHelper = new THREE.GridHelper(400, 50);
-    scene.add(gridHelper);
+    // const gridHelper = new THREE.GridHelper(400, 50);
+    // scene.add(gridHelper);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.update(); // Initial update
@@ -74,6 +74,78 @@ function App() {
     scene.add(saturn); // Add Saturn to the scene
     
   // Render loop
+
+
+    // Add stars to the scene
+    function addStars() {
+      const geometry = new THREE.SphereGeometry(0.5, 26, 26);
+      const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      const star = new THREE.Mesh(geometry, material);
+
+      const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(300));
+      star.position.set(x, y, z);
+      scene.add(star);
+    }
+    
+    Array(300).fill().forEach(addStars);
+
+    // Set space background
+    const spaceTexture = new THREE.TextureLoader().load('space5.jpg');
+    scene.background = spaceTexture;
+
+    function asteroids() {
+      const asteroidTextures = [
+        'saturn.jpg', 'earth.jpg', 'moon.jpg', 'rockface.jpg', 'c.jpg'
+      ];
+    
+      // Randomly select a texture
+      const asteroidTexture = new THREE.TextureLoader().load(asteroidTextures[Math.floor(Math.random() * asteroidTextures.length)]);
+    
+      // Randomly select a geometry
+      const geometries = [
+        new THREE.DodecahedronGeometry(THREE.MathUtils.randFloat(30, 50), 0), // Adjusted size range
+        new THREE.IcosahedronGeometry(THREE.MathUtils.randFloat(30, 50), 0), // Adjusted size range
+      ];
+    
+      const asteroidGeometry = geometries[Math.floor(Math.random() * geometries.length)];
+    
+      const asteroidMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: asteroidTexture,
+        roughness: 0.8, // Adjust roughness to make the surface less smooth
+        metalness: 0.2 // Adjust metalness to make the surface less metallic
+      });
+      const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
+    
+      // Generate random positions within the entire scene range (not close to the planet)
+      const x = THREE.MathUtils.randFloatSpread(1000) - 500; // Adjusted range to scatter across the entire screen width
+      const y = THREE.MathUtils.randFloatSpread(1000) - 500; // Adjusted range to scatter across the entire screen height
+      const z = THREE.MathUtils.randFloatSpread(1000) - 500; // Adjusted range for depth
+    
+      // Check if the asteroid is too close to the planet
+      const distanceToPlanet = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+      const minDistanceToPlanet = 100; // Minimum distance from the planet
+      if (distanceToPlanet < minDistanceToPlanet) {
+        asteroid.position.set(x + 2 * minDistanceToPlanet, y + 2 * minDistanceToPlanet, z + 2 * minDistanceToPlanet);
+      } else {
+        asteroid.position.set(x, y, z);
+      }
+    
+      scene.add(asteroid);
+    
+      // Add rotation to asteroids
+      asteroid.rotation.x = Math.random() * Math.PI * 2;
+      asteroid.rotation.y = Math.random() * Math.PI * 2;
+      asteroid.rotation.z = Math.random() * Math.PI * 2;
+    }
+    
+    // Adjust the number of asteroids as needed
+    Array(25).fill().forEach(asteroids);
+    
+    
+    
+    
+// Render loop
 const animate = () => {
   requestAnimationFrame(animate);
 
@@ -87,40 +159,32 @@ const animate = () => {
   const x = Math.cos(angle) * orbitRadius;
   const z = Math.sin(angle) * orbitRadius;
   saturn.position.set(x, 0, z); // Set new position for Saturn
-
+  
   // Rotate Saturn around its axis
   saturn.rotation.y += 0.02;
-
+  
   // Move the moon around the planet
   const moonOrbitRadius = 30;
   const moonAngle = Date.now() * orbitSpeed;
   const moonX = Math.cos(moonAngle) * moonOrbitRadius;
-  // const moonZ = Math.sin(moonAngle) * moonOrbitRadius;
-  moon.position.set(moonX, 0)
+  moon.position.set(moonX, 0);
+  
+  // Rotate the asteroids
+  scene.children.forEach(object => {
+    if (object instanceof THREE.Mesh && object !== planet && object !== moon && object !== saturn) {
+      object.rotation.x += 0.01; // Adjust rotation speed as needed
+      object.rotation.y += 0.01; // Adjust rotation speed as needed
+    }
+  });
 
   controls.update(); // Update controls
   renderer.render(scene, camera);
 };
 
+animate();
 
-    animate();
-
-    // Add stars to the scene
-    function addStars() {
-      const geometry = new THREE.SphereGeometry(0.5, 24, 24);
-      const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      const star = new THREE.Mesh(geometry, material);
-
-      const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(100));
-      star.position.set(x, y, z);
-      scene.add(star);
-    }
     
-    Array(200).fill().forEach(addStars);
-
-    // Set space background
-    const spaceTexture = new THREE.TextureLoader().load('space5.jpg');
-    scene.background = spaceTexture;
+   
 
     // Cleanup
     return () => {
