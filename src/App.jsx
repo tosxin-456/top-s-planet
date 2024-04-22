@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Navbar from './components/nabar';
-import TWEEN from '@tweenjs/tween.js';
 
 function App() {
   const mountRef = useRef(null);
@@ -143,11 +142,10 @@ function App() {
     // Adjust the number of asteroids as needed
     Array(25).fill().forEach(asteroids);
 
-
-// Create a raycaster
+    
+    // Function to handle asteroid click event
+// Define raycaster globally so it's accessible within event handler
 const raycaster = new THREE.Raycaster();
-
-// Assuming you have defined camera, scene, planet, moon, and saturn somewhere in your code
 
 // Function to handle asteroid click event
 function onAsteroidClick(event) {
@@ -171,11 +169,7 @@ function onAsteroidClick(event) {
     if (clickedObject instanceof THREE.Mesh && clickedObject !== planet && clickedObject !== moon && clickedObject !== saturn) {
       // Move the clicked asteroid back a little
       const moveBackDistance = 50;
-      
-      // Use Tween.js for smooth transition
-      new TWEEN.Tween(clickedObject.position)
-        .to({ z: clickedObject.position.z - moveBackDistance }, 500) // duration: 500ms
-        .start();
+      clickedObject.position.z -= moveBackDistance;
 
       // Adjust rotation speed of the clicked asteroid
       clickedObject.rotationSpeed = {
@@ -187,9 +181,10 @@ function onAsteroidClick(event) {
   }
 }
 
+
+
 // Add click event listener to the document
 document.addEventListener('click', onAsteroidClick, false);
-
 
 // Inside the render loop, adjust the rotation of clicked asteroids
 scene.children.forEach(object => {
