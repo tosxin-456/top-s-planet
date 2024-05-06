@@ -20,7 +20,7 @@ function SolarSystem() {
 
   useEffect(() => {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1500);
     const renderer = new THREE.WebGLRenderer({ canvas: mountRef.current });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -43,12 +43,14 @@ function SolarSystem() {
 
   // Add the sun mesh
 const sunGeometry = new THREE.SphereGeometry(50, 30, 30);
-const sunMaterial = new THREE.MeshStandardMaterial({ emissive: 0xffff00 });
+const sunTexture = new THREE.TextureLoader().load('earth.jpg')
+const sunMaterial = new THREE.MeshStandardMaterial({ emissive: 0xffff00 , map:sunTexture, roughness: 0.8,
+  metalness: 0.7  });
 const sun = new THREE.Mesh(sunGeometry, sunMaterial);
 scene.add(sun);
 
 // Add a point light inside the sun mesh to make it shine brighter
-const sunLight = new THREE.PointLight(0xffffff, 20); // Increase intensity for a brighter sun
+const sunLight = new THREE.PointLight(0xffffff, 50); // Increase intensity for a brighter sun
 sun.add(sunLight);
 sunLight.position.set(0, 0, 0); // Set the position of the light at the center of the sun
 
@@ -62,8 +64,8 @@ sunLight.position.set(0, 0, 0); // Set the position of the light at the center o
 
     // Add planets
     const planets = [];
-    const planetDistances = [200, 300, 400]; // Distances of planets from the sun
-    const planetSizes = [20, 30, 40]; // Sizes of planets
+    const planetDistances = [200, 300, 400,500,600,700, 800, 900, 1000]; // Distances of planets from the sun
+    const planetSizes = [20, 30, 40, 40, 40, 60 , 70 , 50 , 60]; // Sizes of planets
 
     planetDistances.forEach((distance, index) => {
       const planetGeometry = new THREE.SphereGeometry(planetSizes[index], 32, 32);
