@@ -21,7 +21,7 @@ function Navbar({ scene }) {
         text="Topinn's World" // Adjust text content as needed
         fontSize={10} // Adjust font size as needed
         color="white" // Adjust text color as needed
-        maxWidth={200} // Adjust maximum width as needed
+        maxWidth={210} // Adjust maximum width as needed
         anchorX="center"
         anchorY="top" // Position text at the top
       />
