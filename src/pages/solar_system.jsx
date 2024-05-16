@@ -17,6 +17,7 @@ function SolarSystem() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+  
 
   useEffect(() => {
     const scene = new THREE.Scene();
