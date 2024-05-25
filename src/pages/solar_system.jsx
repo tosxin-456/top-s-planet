@@ -18,7 +18,6 @@ function SolarSystem() {
     };
   }, []);
   
-
   useEffect(() => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, aspectRatio, 0.1, 1500);
@@ -42,44 +41,79 @@ function SolarSystem() {
     const spaceTexture = new THREE.TextureLoader().load('space5.jpg');
     scene.background = spaceTexture;
 
-  // Add the sun mesh
-const sunGeometry = new THREE.SphereGeometry(50, 30, 30);
-const sunTexture = new THREE.TextureLoader().load('earth.jpg')
-const sunMaterial = new THREE.MeshStandardMaterial({ emissive: 0xffff00 , map:sunTexture, roughness: 0.8,
-  metalness: 0.7  });
+ // Load a high-resolution sun texture
+    // Create the sun geometry and material with a dark yellow color
+const sunGeometry = new THREE.SphereGeometry(50, 64, 64); // Increase segment count for smoother sphere
+const sunMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0xffa500, // Dark yellow color
+    emissive: 0xffff00, // Bright yellow emissive color
+    emissiveIntensity: 1.5 // Increase emissive intensity
+});
 const sun = new THREE.Mesh(sunGeometry, sunMaterial);
 scene.add(sun);
 
 // Add a point light inside the sun mesh to make it shine brighter
-const sunLight = new THREE.PointLight(0xffffff, 50); // Increase intensity for a brighter sun
+const sunLight = new THREE.PointLight(0xffffff, 2, 1000); // Adjust intensity and distance
 sun.add(sunLight);
-sunLight.position.set(0, 0, 0); // Set the position of the light at the center of the sun
+sunLight.position.set(0, 0, 0); // Position light at the center of the sun
+
+// Add a glow effect
+const spriteMaterial = new THREE.SpriteMaterial({ 
+    map: new THREE.TextureLoader().load('path/to/glow.png'), // A texture of a radial gradient
+    color: 0xffff00, 
+    transparent: true, 
+    blending: THREE.AdditiveBlending 
+});
+const sprite = new THREE.Sprite(spriteMaterial);
+sprite.scale.set(200, 200, 1.0); // Adjust size for the glow effect
+sun.add(sprite);
 
 
-    // Add moon
-    const moonGeometry = new THREE.SphereGeometry(10, 32, 32);
-    const moonMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
-    moon.position.set(100, 0, 0); // Position moon relative to the sun
-    scene.add(moon);
 
     // Add planets
     const planets = [];
-    const planetDistances = [200, 300, 400,500,600,700, 800, 900, 1000]; // Distances of planets from the sun
-    const planetSizes = [20, 30, 40, 40, 40, 60 , 70 , 50 , 60]; // Sizes of planets
+    const planetData = [
+      { distance: 200, size: 20, texture: 'c.jpg' },
+      { distance: 300, size: 30, texture: 'rockface.jpg' },
+      { distance: 400, size: 40, texture: 'spacee.jpg' },
+      { distance: 500, size: 40, texture: 'saturn.jpg' },
+      { distance: 600, size: 40, texture: 'earth.jpg' },
+      { distance: 700, size: 60, texture: 'space2.jpg' },
+      { distance: 800, size: 70, texture: 'c.jpg' },
+      { distance: 900, size: 50, texture: 'space3.jpg' },
+      { distance: 1000, size: 60, texture: 'rockface.jpg' }
+    ];
 
-    planetDistances.forEach((distance, index) => {
-      const planetGeometry = new THREE.SphereGeometry(planetSizes[index], 32, 32);
-      const planetMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    planetData.forEach((data, index) => {
+      const planetGeometry = new THREE.SphereGeometry(data.size, 32, 32);
+      const planetTexture = new THREE.TextureLoader().load(data.texture);
+      const planetMaterial = new THREE.MeshStandardMaterial({ map: planetTexture });
       const planet = new THREE.Mesh(planetGeometry, planetMaterial);
 
-      const angle = (Math.PI * 2 / planetDistances.length) * index;
-      const x = Math.cos(angle) * distance;
-      const z = Math.sin(angle) * distance;
+      // Create a pivot point for each planet to rotate around the sun
+      const pivot = new THREE.Object3D();
+      pivot.position.set(0, 0, 0);
+      scene.add(pivot);
+      pivot.add(planet);
 
-      planet.position.set(x, 0, z);
-      planets.push(planet);
-      scene.add(planet);
+      // Position the planet at the correct distance
+      planet.position.set(data.distance, 0, 0);
+
+      // Add a moon for each planet
+      const moonGeometry = new THREE.SphereGeometry(data.size / 4, 32, 32);
+      const moonMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+
+      // Create a pivot point for the moon to rotate around the planet
+      const moonPivot = new THREE.Object3D();
+      moonPivot.position.set(0, 0, 0);
+      planet.add(moonPivot);
+      moonPivot.add(moon);
+
+      // Position the moon relative to the planet
+      moon.position.set(data.size * 1.5, 0, 0);
+
+      planets.push({ planet, pivot, moonPivot });
     });
 
     // Add stars to the scene
@@ -136,20 +170,11 @@ sunLight.position.set(0, 0, 0); // Set the position of the light at the center o
     const animate = () => {
       requestAnimationFrame(animate);
 
-      // Rotate planets
-      planets.forEach((planet, index) => {
-        planet.rotation.y += 0.01 * (index + 1);
-      });
-
-      // Rotate moon
-      moon.rotation.y += 0.01;
-
-      // Rotate asteroids
-      scene.children.forEach(object => {
-        if (object instanceof THREE.Mesh && object !== sun && object !== moon && !planets.includes(object)) {
-          object.rotation.x += 0.01;
-          object.rotation.y += 0.01;
-        }
+      // Rotate planets around the sun
+      planets.forEach(({ planet, pivot, moonPivot }, index) => {
+        pivot.rotation.y += 0.001 * (index + 1);
+        planet.rotation.y += 0.01;
+        moonPivot.rotation.y += 0.05;
       });
 
       controls.update(); 
